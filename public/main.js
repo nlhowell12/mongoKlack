@@ -3,6 +3,8 @@ const messagesDiv = document.getElementById("messageslist");
 const textarea = document.getElementById("newmessage");
 const ding = new Audio('typewriter_ding.m4a');
 
+
+
 // this will be the list of all messages displayed on the client
 let messages = [{timestamp: 0}];
 
@@ -12,9 +14,10 @@ if(name.length===0) name = "Anon-" + Math.floor(Math.random()*1000);
 
 // add the sender and text of one new message to the bottom of the message list
 function appendMessage(msg) {
+    
     messages.push(msg);
     messagesDiv.innerHTML +=
-      `<div class="message"><strong>${msg.sender}</strong><br>${msg.message}</div>`;
+      `<div class="message"><strong>${msg.name}</strong><br>${msg.message}</div>`;
 }
 
 // redraw the entire list of users, indicating active/inactive
@@ -45,6 +48,7 @@ function fetchMessages() {
 
             // redraw the user list
             listUsers(data.users);
+            console.log(data.users)
 
             // examine all received messages, add those newer than the last one shown
             for(let i = 0; i < data.messages.length; i++){ 
