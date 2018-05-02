@@ -44,16 +44,15 @@ function fetchMessages() {
         .then(data => {
             // if already scrolled to bottom, do so again after adding messages
             const shouldScroll = scrolledToBottom();
-            var shouldDing = false;
+            let shouldDing = false;
 
             // redraw the user list
             listUsers(data.users);
-            console.log(data.users)
+           
 
             // examine all received messages, add those newer than the last one shown
-            for(let i = 0; i < data.messages.length; i++){ 
-                let msg = data.messages[i];
-                if(msg.timestamp > messages[messages.length-1].timestamp) {
+            for(let msg of data.messages) {
+                if(msg.timestamp > messages[messages.length - 1].timestamp) {
                     appendMessage(msg);
                     shouldDing = true;
                 }
@@ -75,7 +74,7 @@ document.getElementById("newmessage").addEventListener("keypress", (event) => {
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({sender: name, message: textarea.value}),
+            body: JSON.stringify( { name, message: textarea.value } ),
         }
         fetch("/messages", postRequestOptions)
             .then(response => response.json())
@@ -84,7 +83,7 @@ document.getElementById("newmessage").addEventListener("keypress", (event) => {
                 scrollMessages();
 
                 // reset the textarea
-                textarea.value="";
+                textarea.value = "";
                 textarea.disabled = false;
                 textarea.focus();
             })
