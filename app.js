@@ -101,7 +101,7 @@ app.post("/messages", (req, res) => {
 
     // update the posting user's last access timestamp (so we know they are active)
     // let lastMsgTimeStamp = 
-    usersTimestamps[req.body.sender] = timestamp
+    usersTimestamps[req.body.name] = timestamp
 
     // Send back the successful response.
     res.status(201)
