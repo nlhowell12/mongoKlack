@@ -1,12 +1,9 @@
 const userList = document.getElementById("users");
 const messagesDiv = document.getElementById("messageslist");
+const feedback = document.getElementById("feedback");
 const textarea = document.getElementById("newmessage");
 const ding = new Audio('typewriter_ding.m4a');
-
-
-
-// this will be the list of all messages displayed on the client
-let messages = [{timestamp: 0}];
+const socket = io.connect('http://localhost:3000')
 
 let name = window.prompt("Enter your name");
 // if they didn't type anything at the prompt, make up a random name
@@ -17,15 +14,16 @@ function appendMessage(msg) {
     
     messages.push(msg);
     messagesDiv.innerHTML +=
-      `<div class="message"><strong>${msg.name}</strong><br>${msg.message}</div>`;
+    `<div class="message"><strong>${msg.name}</strong><br>${msg.message}</div>`;
 }
 
 // redraw the entire list of users, indicating active/inactive
 function listUsers(users) {
+    console.log(users);
     let userStrings = users.map((user) =>
-        (user.active ? `<span class="active"><span class="cyan">&#9679;</span> ${user.name}</span>` : `<span class="inactive">&#9675; ${user.name}</span>`)
-    );
-    userList.innerHTML = userStrings.join("<br>");
+    (user.active ? `<span class="active"><span class="cyan">&#9679;</span> ${user.name}</span>` : `<span class="inactive">&#9675; ${user.name}</span>`)
+);
+userList.innerHTML = userStrings.join("<br>");
 }
 
 // true if the messages div is already scrolled down to the latest message
@@ -38,57 +36,35 @@ function scrollMessages() {
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-function fetchMessages() {
-    fetch("/messages?for=" + encodeURIComponent(name))
-        .then(response => response.json())
-        .then(data => {
-            // if already scrolled to bottom, do so again after adding messages
-            const shouldScroll = scrolledToBottom();
-            let shouldDing = false;
-
-            // redraw the user list
-            listUsers(data.users);
-           
-
-            // examine all received messages, add those newer than the last one shown
-            for(let msg of data.messages) {
-                if(msg.timestamp > messages[messages.length - 1].timestamp) {
-                    appendMessage(msg);
-                    shouldDing = true;
-                }
-            }
-            if(shouldScroll && shouldDing) scrollMessages();
-            if(shouldDing) ding.play();
-
-            // poll again after waiting 5 seconds
-            setTimeout(fetchMessages, 5000);
-        })
-}
-
 document.getElementById("newmessage").addEventListener("keypress", (event) => {
+    // If user is typing, send 'typing' to server
+    socket.emit('typing', {
+        name
+    })
     // if the key pressed was enter (and not shift enter), post the message.
     if(event.keyCode === 13 && !event.shiftKey) {
-        textarea.disabled = true;
-        const postRequestOptions = {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify( { name, message: textarea.value } ),
-        }
-        fetch("/messages", postRequestOptions)
-            .then(response => response.json())
-            .then(msg => {
-                appendMessage(msg);
-                scrollMessages();
-
-                // reset the textarea
-                textarea.value = "";
-                textarea.disabled = false;
-                textarea.focus();
-            })
+        ding.play();
+        socket.emit('chat', {name, message: textarea.value});
+        textarea.value = "";
+        textarea.focus();
     }
 })
 
-// call on startup to populate the messages and start the polling loop
-fetchMessages();
+socket.on('initial', (data) => {
+    for (let message of data) {
+        messagesDiv.innerHTML += `<div class="message"><strong>${message.name}</strong><br>${message.message}</div>`;
+    }
+})
+
+socket.on('chat', (data) => {
+    feedback.innerHTML = "";
+    messagesDiv.innerHTML +=
+      `<div class="message"><strong>${data.message.name}</strong><br>${data.message.message}</div>`;
+      listUsers(data.users);
+      scrollMessages();
+})
+
+socket.on('typing', (data) => {
+    feedback.innerHTML =
+      `<strong>${data.name}</strong> is typing.`;
+})
