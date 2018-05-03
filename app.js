@@ -3,6 +3,7 @@ const querystring = require('querystring');
 const app = express()
 const mongoose = require('mongoose');
 const port = process.env.PORT || 3000
+console.log(port);
 // setting up websockets
 const socket = require('socket.io');
 const server = app.listen(port);
