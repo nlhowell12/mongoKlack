@@ -1,16 +1,22 @@
 const express = require('express')
 const querystring = require('querystring');
-const port = 3000
 const app = express()
 const mongoose = require('mongoose');
-
+const port = process.env.PORT || 3000
 // setting up websockets
 const socket = require('socket.io');
 const server = app.listen(port);
 const io = socket(server);
 
+// mlab/heroku stuff
+const dbName = 'klack';
+const DB_USER = 'admin';
+const DB_PASSWORD = 'admin';
+const DB_URI = "ds119306.mlab.com:19306";
+
+
 //mongo stuff
-mongoose.connect('mongodb://localhost/klack', () => {
+mongoose.connect(`mongodb://${DB_USER}:${DB_PASSWORD}@${DB_URI}/${dbName}`, () => {
 console.log('connection success')
 })
 const db = mongoose.connection;
