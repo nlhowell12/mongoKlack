@@ -3,8 +3,8 @@ const messagesDiv = document.getElementById("messageslist");
 const feedback = document.getElementById("feedback");
 const textarea = document.getElementById("newmessage");
 const ding = new Audio('typewriter_ding.m4a');
-const socket = io.connect('https://kenzieslack.herokuapp.com/')
-
+// const socket = io.connect('https://kenzieslack.herokuapp.com/')
+const socket = io.connect('http://localhost:3000')
 let name = window.prompt("Enter your name");
 // if they didn't type anything at the prompt, make up a random name
 if(name.length===0) name = "Anon-" + Math.floor(Math.random()*1000);
@@ -51,15 +51,21 @@ document.getElementById("newmessage").addEventListener("keypress", (event) => {
 })
 
 socket.on('initial', (data) => {
+    console.log(data);
     for (let message of data) {
         messagesDiv.innerHTML += `<div class="message"><strong>${message.name}</strong><br>${message.message}</div>`;
     }
+})
+
+socket.on('initialUsers', (data) =>{
+    // listUsers(data);
 })
 
 socket.on('chat', (data) => {
     feedback.innerHTML = "";
     messagesDiv.innerHTML +=
       `<div class="message"><strong>${data.message.name}</strong><br>${data.message.message}</div>`;
+      console.log(data.users)
       listUsers(data.users);
       scrollMessages();
 })

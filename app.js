@@ -3,7 +3,7 @@ const querystring = require('querystring');
 const app = express()
 const mongoose = require('mongoose');
 const port = process.env.PORT || 3000
-console.log(port);
+
 // setting up websockets
 const socket = require('socket.io');
 const server = app.listen(port);
@@ -43,7 +43,6 @@ app.use(express.json())
 // Track last active times for each sender
 const usersTimestamps = {}
 
-
 // generic comparison function for case-insensitive alphabetic sorting on the name field
 function userSortFn(a, b) {
     var nameA = a.name.toUpperCase(); // ignore upper and lowercase
@@ -62,7 +61,20 @@ function userSortFn(a, b) {
 // Setting up socket endpoints
 io.on('connection', (socket) => {
     console.log(`Connected on Port: ${port}`)
-    console.log(usersTimestamps)
+    Message.find()
+        .then(messages => {
+            messages.forEach(message => {
+                if (!usersTimestamps[message.name]) {
+                    usersTimestamps[message.name] = message.timestamp
+                } else if (usersTimestamps[message.name] < message.timestamp) {
+                    usersTimestamps[message.name] = message.timestamp
+                }
+            })
+        })
+        .catch(err => {
+            console.error(err);
+        })    
+
     Message.find((err, messages) => {
         socket.emit('initial', messages);
     })
@@ -71,7 +83,7 @@ io.on('connection', (socket) => {
     socket.on('chat', (data) =>{
         // get the current time
         const now = Date.now();
-    
+        console.log(now)
         // consider users active if they have connected (GET or POST) in last 15 seconds
         const requireActiveSince = now - (15*1000)
         
