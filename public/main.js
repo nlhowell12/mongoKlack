@@ -3,8 +3,7 @@ const messagesDiv = document.getElementById("messageslist");
 const feedback = document.getElementById("feedback");
 const textarea = document.getElementById("newmessage");
 const ding = new Audio('typewriter_ding.m4a');
-// const socket = io.connect('https://kenzieslack.herokuapp.com/')
-const socket = io.connect('http://localhost:3000')
+const socket = io.connect('https://kenzieslack.herokuapp.com/')
 let name = window.prompt("Enter your name");
 // if they didn't type anything at the prompt, make up a random name
 if(name.length===0) name = "Anon-" + Math.floor(Math.random()*1000);
