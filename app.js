@@ -71,6 +71,19 @@ io.on('connection', (socket) => {
                 }
             })
         })
+        .then(() => {
+            const now = Date.now();
+            // consider users active if they have connected (GET or POST) in last 15 seconds
+            const requireActiveSince = now - (15*1000)
+            
+            // create a new list of users with a flag indicating whether they have been active recently
+            usersSimple = Object.keys(usersTimestamps).map((x) => ({name: x, active: (usersTimestamps[x] > requireActiveSince)}))
+            
+            // sort the list of users alphabetically by name
+            usersSimple.sort(userSortFn);
+            usersSimple.filter((a) => (a.name !== usersTimestamps.name))
+            socket.emit('activeUsers', {users: usersSimple})
+        })
         .catch(err => {
             console.error(err);
         })    
@@ -83,7 +96,6 @@ io.on('connection', (socket) => {
     socket.on('chat', (data) =>{
         // get the current time
         const now = Date.now();
-        console.log(now)
         // consider users active if they have connected (GET or POST) in last 15 seconds
         const requireActiveSince = now - (15*1000)
         
@@ -96,8 +108,6 @@ io.on('connection', (socket) => {
         // sort the list of users alphabetically by name
         usersSimple.sort(userSortFn);
         usersSimple.filter((a) => (a.name !== data.name))
-        
-        
         
         let message = new Message({
             name: data.name,
@@ -113,5 +123,22 @@ io.on('connection', (socket) => {
     socket.on('typing', (data) => {
         socket.broadcast.emit('typing', data);
     })
+    
+    setInterval((sockets) => {
+        const now = Date.now();
+        // consider users active if they have connected (GET or POST) in last 15 seconds
+        const requireActiveSince = now - (15*1000)
+        
+        // create a new list of users with a flag indicating whether they have been active recently
+        usersSimple = Object.keys(usersTimestamps).map((x) => ({name: x, active: (usersTimestamps[x] > requireActiveSince)}))
+        
+        // sort the list of users alphabetically by name
+        usersSimple.sort(userSortFn);
+        usersSimple.filter((a) => (a.name !== usersTimestamps.name))
+        console.log("I'm watching you...")
+        io.sockets.emit('activeUsers', {users: usersSimple})
+    }, 15000)
 })
+
+
 

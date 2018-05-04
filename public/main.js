@@ -57,8 +57,8 @@ socket.on('initial', (data) => {
     }
 })
 
-socket.on('initialUsers', (data) =>{
-    // listUsers(data);
+socket.on('activeUsers', (data) =>{
+    listUsers(data.users);
 })
 
 socket.on('chat', (data) => {
@@ -74,3 +74,4 @@ socket.on('typing', (data) => {
     feedback.innerHTML =
       `<strong>${data.name}</strong> is typing.`;
 })
+
