@@ -3,14 +3,16 @@ const messagesDiv = document.getElementById("messageslist");
 const feedback = document.getElementById("feedback");
 const textarea = document.getElementById("newmessage");
 const ding = new Audio('typewriter_ding.m4a');
-const socket = io.connect('https://kenzieslack.herokuapp.com/')
 let name = window.prompt("Enter your name");
+
+// Connects to the server
+const socket = io.connect('https://kenzieslack.herokuapp.com/')
+
 // if they didn't type anything at the prompt, make up a random name
 if(name.length===0) name = "Anon-" + Math.floor(Math.random()*1000);
 
 // add the sender and text of one new message to the bottom of the message list
 function appendMessage(msg) {
-    
     messages.push(msg);
     messagesDiv.innerHTML +=
     `<div class="message"><strong>${msg.name}</strong><br>${msg.message}</div>`;
@@ -40,7 +42,7 @@ document.getElementById("newmessage").addEventListener("keypress", (event) => {
     socket.emit('typing', {
         name
     })
-    // if the key pressed was enter (and not shift enter), post the message.
+    // if the key pressed was enter (and not shift+enter), post the message.
     if(event.keyCode === 13 && !event.shiftKey) {
         ding.play();
         socket.emit('chat', {name, message: textarea.value});
@@ -49,6 +51,7 @@ document.getElementById("newmessage").addEventListener("keypress", (event) => {
     }
 })
 
+// Prints out all the messages in the database when the server sends it on initial connection
 socket.on('initial', (data) => {
     console.log(data);
     for (let message of data) {
@@ -56,10 +59,14 @@ socket.on('initial', (data) => {
     }
 })
 
+// Redraws the user list to show inactive users when the server checks every 15 seconds
 socket.on('activeUsers', (data) =>{
     listUsers(data.users);
 })
 
+// Creates a new chat message in the messagesDiv when a Chat message is received from the server
+// Redraws the user list 
+// Scrolls to the bottom of the messagesDiv
 socket.on('chat', (data) => {
     feedback.innerHTML = "";
     messagesDiv.innerHTML +=
@@ -69,6 +76,7 @@ socket.on('chat', (data) => {
       scrollMessages();
 })
 
+// Displays "User is typing" when the server sends a typing message
 socket.on('typing', (data) => {
     feedback.innerHTML =
       `<strong>${data.name}</strong> is typing.`;

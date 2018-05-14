@@ -4,6 +4,9 @@ const app = express()
 const mongoose = require('mongoose');
 const port = process.env.PORT || 3000
 
+app.use(express.static("./public"))
+app.use(express.json())
+
 // setting up websockets
 const socket = require('socket.io');
 const server = app.listen(port);
@@ -33,12 +36,7 @@ const messageSchema = new Schema({
 });
 
 //compile a response model from the schema
-
 const Message = mongoose.model('Message', messageSchema)
-
-
-app.use(express.static("./public"))
-app.use(express.json())
 
 // Track last active times for each sender
 const usersTimestamps = {}
@@ -96,7 +94,7 @@ io.on('connection', (socket) => {
     socket.on('chat', (data) =>{
         // get the current time
         const now = Date.now();
-        // consider users active if they have connected (GET or POST) in last 15 seconds
+        // consider users active if they have sent a message in last 15 seconds
         const requireActiveSince = now - (15*1000)
         
         // update the requesting user's last access time
@@ -126,7 +124,7 @@ io.on('connection', (socket) => {
     
     setInterval((sockets) => {
         const now = Date.now();
-        // consider users active if they have connected (GET or POST) in last 15 seconds
+        // consider users active if their last message was sent in the last 15 seconds
         const requireActiveSince = now - (15*1000)
         
         // create a new list of users with a flag indicating whether they have been active recently
