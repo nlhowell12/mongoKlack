@@ -11,13 +11,6 @@ const socket = io.connect('https://kenzieslack.herokuapp.com/')
 // if they didn't type anything at the prompt, make up a random name
 if(name.length===0) name = "Anon-" + Math.floor(Math.random()*1000);
 
-// add the sender and text of one new message to the bottom of the message list
-function appendMessage(msg) {
-    messages.push(msg);
-    messagesDiv.innerHTML +=
-    `<div class="message"><strong>${msg.name}</strong><br>${msg.message}</div>`;
-}
-
 // redraw the entire list of users, indicating active/inactive
 function listUsers(users) {
     console.log(users);
